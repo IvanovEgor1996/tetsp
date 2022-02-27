@@ -1,0 +1,53 @@
+version: '2.4'
+services:
+
+  postgresql:
+    build:
+      context: ./pg/
+    ports:
+      - "35433:5432"
+    volumes:
+      - $PWD/pg:/var/lib/pg/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrations:
+    build: .
+    environment:
+      - POSTGRES_HOST=postgresql
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=role1
+      - POSTGRES_PASSWORD=role1
+      - POSTGRES_DBNAME=testp
+      - APP_MODE=MIGRATE
+    command: bash -c "go run main.go init && go run main.go"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+
+  booking:
+    build: .
+    ports:
+      - "38000:8000"
+    environment:
+      - APP_PORT=8000
+
+      - PG_HOST=postgresql
+      - PG_PORT=5432
+      - PG_USERNAME=role1
+      - PG_PASSWORD=role1
+      - PG_DBNAME=testp
+
+    command: go run main.go
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      migrations:
+        condition: service_started
+    volumes:
+      - ./:/app
