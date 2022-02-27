@@ -63,6 +63,11 @@ func (s *Service) moveBalanceHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "not enough money on balance")
 	}
 
+	if _, err := tx.GetBalance(params.UserTo); err != nil {
+		tx.RollbackTX()
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
 	if err := tx.IncBalance(params.UserFrom, int(-params.Sum)); err != nil {
 		tx.RollbackTX()
 		return c.String(http.StatusInternalServerError, err.Error())

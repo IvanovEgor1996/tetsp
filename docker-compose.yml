@@ -17,11 +17,11 @@ services:
   migrations:
     build: .
     environment:
-      - POSTGRES_HOST=postgresql
-      - POSTGRES_PORT=5432
-      - POSTGRES_USERNAME=role1
-      - POSTGRES_PASSWORD=role1
-      - POSTGRES_DBNAME=testp
+      - PG_HOST=postgresql
+      - PG_PORT=5432
+      - PG_USERNAME=role1
+      - PG_PASSWORD=role1
+      - PG_DBNAME=testp
       - APP_MODE=MIGRATE
     command: bash -c "go run main.go init && go run main.go"
     depends_on:
